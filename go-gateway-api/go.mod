@@ -1,4 +1,4 @@
-module github.com/iagomauricio/imersao22/go-gateway
+module github.com/iagomauricio/fsfc-gateway-pagamentos/go-gateway
 
 go 1.24.1
 
