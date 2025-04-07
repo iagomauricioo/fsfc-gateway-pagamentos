@@ -20,19 +20,19 @@ type Account struct {
 	UpdatedAt time.Time
 }
 
-func generateApiKey() string {
+func GenerateApiKey() string {
 	b := make([]byte, 16)
 	rand.Read(b)
 	return hex.EncodeToString(b)
 }
 
-func newAccount(name, email string) *Account {
+func NewAccount(name, email string) *Account {
 	account := &Account{
 		ID:        uuid.New().String(),
 		Name:      name,
 		Email:     email,
 		Balance:   0,
-		ApiKey:    generateApiKey(),
+		ApiKey:    GenerateApiKey(),
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
