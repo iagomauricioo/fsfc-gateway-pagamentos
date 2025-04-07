@@ -5,3 +5,4 @@ type AccountRepository interface {
 	FindByID(id string) (*Account, error)
 	Update(account *Account) error
 }
+
