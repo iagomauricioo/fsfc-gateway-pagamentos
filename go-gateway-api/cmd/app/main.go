@@ -8,7 +8,7 @@ import (
 
 	"github.com/iagomauricio/fsfc-gateway-pagamentos/go-gateway/internal/repository"
 	"github.com/iagomauricio/fsfc-gateway-pagamentos/go-gateway/internal/service"
-	"github.com/iagomauricio/fsfc-gateway-pagamentos/go-gateway/internal/web/handlers/server"
+	"github.com/iagomauricio/fsfc-gateway-pagamentos/go-gateway/internal/web/server"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
@@ -44,8 +44,11 @@ func main() {
 	accountRepository := repository.NewAccountRepository(db)
 	accountService := service.NewAccountService(accountRepository)
 
+	invoiceRepository := repository.NewInvoiceRepository(db)
+	invoiceService := service.NewInvoiceService(invoiceRepository, *accountService)
+
 	port := Getenv("HTTP_PORT")
-	srv := server.NewServer(accountService, port)
+	srv := server.NewServer(accountService, invoiceService, port)
 	srv.ConfigureRoutes()
 
 	if err := srv.Start(); err != nil {

@@ -29,7 +29,7 @@ func (s *AccountService) CreateAccount(input dto.CreateAccountInput) (*dto.Accou
 	}
 
 	output := dto.FromAccount(account)
-	return &output, nil
+	return output, nil
 }
 
 func (s *AccountService) UpdateBalance(apiKey string, amount float64) (*dto.AccountOutput, error) {
@@ -39,14 +39,12 @@ func (s *AccountService) UpdateBalance(apiKey string, amount float64) (*dto.Acco
 	}
 
 	account.AddBalance(amount)
-	err = s.repository.Update(account)
+	err = s.repository.UpdateBalance(account)
 	if err != nil {
 		return nil, err
 	}
-
 	output := dto.FromAccount(account)
-
-	return &output, nil
+	return output, nil
 }
 
 func (s *AccountService) FindByApiKey(apiKey string) (*dto.AccountOutput, error) {
@@ -55,7 +53,7 @@ func (s *AccountService) FindByApiKey(apiKey string) (*dto.AccountOutput, error)
 		return nil, err
 	}
 	output := dto.FromAccount(account)
-	return &output, nil
+	return output, nil
 }
 
 func (s *AccountService) FindByID(id string) (*dto.AccountOutput, error) {
@@ -64,5 +62,5 @@ func (s *AccountService) FindByID(id string) (*dto.AccountOutput, error) {
 		return nil, err
 	}
 	output := dto.FromAccount(account)
-	return &output, nil
-}	
+	return output, nil
+}

@@ -11,11 +11,6 @@ type AccountRepository struct {
 	db *sql.DB
 }
 
-// Update implements domain.AccountRepository.
-func (r *AccountRepository) Update(account *domain.Account) error {
-	panic("unimplemented")
-}
-
 func NewAccountRepository(db *sql.DB) *AccountRepository {
 	return &AccountRepository{db: db}
 }
@@ -113,7 +108,7 @@ func (r *AccountRepository) UpdateBalance(account *domain.Account) error {
 	defer tx.Rollback()
 
 	var currentBalance float64
-	err = tx.QueryRow(`SELECT balance from accounts WHERE id = $1 FOR UPDATE`,
+	err = tx.QueryRow(`SELECT balance FROM accounts WHERE id = $1 FOR UPDATE`,
 		account.ID).Scan(&currentBalance)
 
 	if err == sql.ErrNoRows {
@@ -124,8 +119,10 @@ func (r *AccountRepository) UpdateBalance(account *domain.Account) error {
 	}
 
 	_, err = tx.Exec(`
-		UPDATE accounts SET balance = $1 SET updated_at = $2 WHERE id = $3
-	`, account.Balance, time.Now(), account.ID)
+        UPDATE accounts
+        SET balance = $1, updated_at = $2
+        WHERE id = $3
+    `, account.Balance, time.Now(), account.ID)
 	if err != nil {
 		return err
 	}

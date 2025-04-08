@@ -25,8 +25,8 @@ func ToAccount(input *CreateAccountInput) *domain.Account {
 	return domain.NewAccount(input.Name, input.Email)
 }
 
-func FromAccount(account *domain.Account) AccountOutput {
-	return AccountOutput{
+func FromAccount(account *domain.Account) *AccountOutput {
+	return &AccountOutput{
 		ID:        account.ID,
 		Name:      account.Name,
 		Email:     account.Email,
