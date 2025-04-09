@@ -18,7 +18,7 @@ func NewInvoiceService(invoiceRepository domain.InvoiceRepository, accountServic
 }
 
 func (s *InvoiceService) Create(input dto.CreateInvoiceInput) (*dto.InvoiceOutput, error) {
-	accountOutput, err := s.accountService.FindByApiKey(input.ApiKey)
+	accountOutput, err := s.accountService.FindByAPIKey(input.APIKey)
 	if err != nil {
 		return nil, err
 	}
@@ -33,26 +33,26 @@ func (s *InvoiceService) Create(input dto.CreateInvoiceInput) (*dto.InvoiceOutpu
 	}
 
 	if invoice.Status == domain.StatusApproved {
-		_, err = s.accountService.UpdateBalance(input.ApiKey, invoice.Amount)
+		_, err = s.accountService.UpdateBalance(input.APIKey, invoice.Amount)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	err = s.invoiceRepository.Save(invoice)
-	if err != nil {
+	if err := s.invoiceRepository.Save(invoice); err != nil {
 		return nil, err
 	}
 
 	return dto.FromInvoice(invoice), nil
 }
 
-func (s *InvoiceService) GetByID(id string, apiKey string) (*dto.InvoiceOutput, error) {
+func (s *InvoiceService) GetByID(id, apiKey string) (*dto.InvoiceOutput, error) {
 	invoice, err := s.invoiceRepository.FindByID(id)
 	if err != nil {
 		return nil, err
 	}
-	accountOutput, err := s.accountService.FindByApiKey(apiKey)
+
+	accountOutput, err := s.accountService.FindByAPIKey(apiKey)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +64,7 @@ func (s *InvoiceService) GetByID(id string, apiKey string) (*dto.InvoiceOutput, 
 	return dto.FromInvoice(invoice), nil
 }
 
-func (s *InvoiceService) ListByAccountID(accountID string) ([]*dto.InvoiceOutput, error) {
+func (s *InvoiceService) ListByAccount(accountID string) ([]*dto.InvoiceOutput, error) {
 	invoices, err := s.invoiceRepository.FindByAccountID(accountID)
 	if err != nil {
 		return nil, err
@@ -77,20 +77,12 @@ func (s *InvoiceService) ListByAccountID(accountID string) ([]*dto.InvoiceOutput
 	return output, nil
 }
 
-func (s *InvoiceService) ListByAccountApiKey(apiKey string) ([]*dto.InvoiceOutput, error) {
-	accountOutput, err := s.accountService.FindByApiKey(apiKey)
+// ListByAccountAPIKey lista as faturas de uma conta através de uma API Key
+func (s *InvoiceService) ListByAccountAPIKey(apiKey string) ([]*dto.InvoiceOutput, error) {
+	accountOutput, err := s.accountService.FindByAPIKey(apiKey)
 	if err != nil {
 		return nil, err
 	}
 
-	invoices, err := s.invoiceRepository.FindByAccountID(accountOutput.ID)
-	if err != nil {
-		return nil, err
-	}
-
-	output := make([]*dto.InvoiceOutput, len(invoices))
-	for i, invoice := range invoices {
-		output[i] = dto.FromInvoice(invoice)
-	}
-	return output, nil
+	return s.ListByAccount(accountOutput.ID)
 }

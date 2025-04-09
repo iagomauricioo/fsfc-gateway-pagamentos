@@ -2,10 +2,9 @@ package handlers
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
 	"github.com/iagomauricio/fsfc-gateway-pagamentos/go-gateway/internal/domain"
 	"github.com/iagomauricio/fsfc-gateway-pagamentos/go-gateway/internal/dto"
 	"github.com/iagomauricio/fsfc-gateway-pagamentos/go-gateway/internal/service"
@@ -21,6 +20,9 @@ func NewInvoiceHandler(service *service.InvoiceService) *InvoiceHandler {
 	}
 }
 
+// Request autenticação via X-API-KEY
+// Endpoint: /invoice
+// Method: POST
 func (h *InvoiceHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var input dto.CreateInvoiceInput
 	err := json.NewDecoder(r.Body).Decode(&input)
@@ -29,7 +31,7 @@ func (h *InvoiceHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	input.ApiKey = r.Header.Get("X-API-KEY")
+	input.APIKey = r.Header.Get("X-API-KEY")
 
 	output, err := h.service.Create(input)
 	if err != nil {
@@ -42,17 +44,22 @@ func (h *InvoiceHandler) Create(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(output)
 }
 
+// Endpoint: /invoice/{id}
+// Method: GET
 func (h *InvoiceHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
-	log.Printf("URL Path: %s", r.URL.Path)
-	log.Printf("ID recebido: %s", id)
-
 	if id == "" {
 		http.Error(w, "ID is required", http.StatusBadRequest)
 		return
 	}
 
-	output, err := h.service.GetByID(id, r.Header.Get("X-API-KEY"))
+	apiKey := r.Header.Get("X-API-KEY")
+	if apiKey == "" {
+		http.Error(w, "X-API-KEY is required", http.StatusBadRequest)
+		return
+	}
+
+	output, err := h.service.GetByID(id, apiKey)
 	if err != nil {
 		switch err {
 		case domain.ErrInvoiceNotFound:
@@ -71,28 +78,19 @@ func (h *InvoiceHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(output)
 }
 
-func (h *InvoiceHandler) ListByAccountID(w http.ResponseWriter, r *http.Request) {
-	accountID := chi.URLParam(r, "account_id")
-
-	output, err := h.service.ListByAccountID(accountID)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+// Endpoint: /invoice
+// Method: GET
+func (h *InvoiceHandler) ListByAccount(w http.ResponseWriter, r *http.Request) {
+	apiKey := r.Header.Get("X-API-KEY")
+	if apiKey == "" {
+		http.Error(w, "X-API-KEY is required", http.StatusUnauthorized)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(output)
-}
-
-func (h *InvoiceHandler) ListByAccountApiKey(w http.ResponseWriter, r *http.Request) {
-	apiKey := r.Header.Get("X-API-KEY")
-
-	output, err := h.service.ListByAccountApiKey(apiKey)
+	output, err := h.service.ListByAccountAPIKey(apiKey)
 	if err != nil {
 		switch err {
 		case domain.ErrAccountNotFound:
@@ -105,6 +103,5 @@ func (h *InvoiceHandler) ListByAccountApiKey(w http.ResponseWriter, r *http.Requ
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(output)
 }

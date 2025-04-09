@@ -1,8 +1,6 @@
 package server
 
 import (
-	"context"
-	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -38,11 +36,9 @@ func (s *Server) ConfigureRoutes() {
 
 	s.router.Group(func(r chi.Router) {
 		r.Use(authMiddleware.Authenticate)
-		r.Route("/invoice", func(r chi.Router) {
-			r.Post("/", invoiceHandler.Create)
-			r.Get("/{id}", invoiceHandler.GetByID)
-			r.Get("/", invoiceHandler.ListByAccountApiKey)
-		})
+		s.router.Post("/invoice", invoiceHandler.Create)
+		s.router.Get("/invoice/{id}", invoiceHandler.GetByID)
+		s.router.Get("/invoice", invoiceHandler.ListByAccount)
 	})
 }
 
@@ -51,14 +47,5 @@ func (s *Server) Start() error {
 		Addr:    ":" + s.port,
 		Handler: s.router,
 	}
-
-	s.logStartupMessage()
 	return s.server.ListenAndServe()
-}
-
-func (s *Server) Stop() error {
-	return s.server.Shutdown(context.Background())
-}
-func (s *Server) logStartupMessage() {
-	log.Printf("Servidor rodando em http://localhost:%s", s.port)
 }

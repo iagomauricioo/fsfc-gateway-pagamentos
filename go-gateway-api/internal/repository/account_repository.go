@@ -7,52 +7,58 @@ import (
 	"github.com/iagomauricio/fsfc-gateway-pagamentos/go-gateway/internal/domain"
 )
 
+// AccountRepository implementa operações de persistência para Account
 type AccountRepository struct {
 	db *sql.DB
 }
 
+// NewAccountRepository cria um novo repositório de contas
 func NewAccountRepository(db *sql.DB) *AccountRepository {
 	return &AccountRepository{db: db}
 }
 
+// Save persiste uma nova conta no banco de dados
+// Retorna erro se houver falha na inserção
 func (r *AccountRepository) Save(account *domain.Account) error {
-	stmt, err := r.db.Prepare("INSERT INTO accounts (id, name, email, api_key, balance, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7)")
-
+	stmt, err := r.db.Prepare(`
+        INSERT INTO accounts (id, name, email, api_key, balance, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+    `)
 	if err != nil {
 		return err
 	}
-
 	defer stmt.Close()
 
 	_, err = stmt.Exec(
 		account.ID,
 		account.Name,
 		account.Email,
-		account.ApiKey,
+		account.APIKey,
 		account.Balance,
 		account.CreatedAt,
 		account.UpdatedAt,
 	)
-
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r *AccountRepository) FindByApiKey(apiKey string) (*domain.Account, error) {
+// FindByAPIKey busca uma conta pelo API Key
+// Retorna ErrAccountNotFound se não encontrada
+func (r *AccountRepository) FindByAPIKey(apiKey string) (*domain.Account, error) {
 	var account domain.Account
 	var createdAt, updatedAt time.Time
 
 	err := r.db.QueryRow(`
-		SELECT id, name, email, api_key, 
-		balance, created_at, updated_at 
-		FROM accounts 
-		WHERE api_key = $1`, apiKey).Scan(
+		SELECT id, name, email, api_key, balance, created_at, updated_at
+		FROM accounts
+		WHERE api_key = $1
+	`, apiKey).Scan(
 		&account.ID,
 		&account.Name,
 		&account.Email,
-		&account.ApiKey,
+		&account.APIKey,
 		&account.Balance,
 		&createdAt,
 		&updatedAt,
@@ -60,7 +66,6 @@ func (r *AccountRepository) FindByApiKey(apiKey string) (*domain.Account, error)
 	if err == sql.ErrNoRows {
 		return nil, domain.ErrAccountNotFound
 	}
-
 	if err != nil {
 		return nil, err
 	}
@@ -70,19 +75,21 @@ func (r *AccountRepository) FindByApiKey(apiKey string) (*domain.Account, error)
 	return &account, nil
 }
 
+// FindByID busca uma conta pelo ID
+// Retorna ErrAccountNotFound se não encontrada
 func (r *AccountRepository) FindByID(id string) (*domain.Account, error) {
 	var account domain.Account
 	var createdAt, updatedAt time.Time
 
 	err := r.db.QueryRow(`
-		SELECT id, name, email, api_key, 
-		balance, created_at, updated_at 
-		FROM accounts 
-		WHERE id = $1`, id).Scan(
+		SELECT id, name, email, api_key, balance, created_at, updated_at
+		FROM accounts
+		WHERE id = $1
+	`, id).Scan(
 		&account.ID,
 		&account.Name,
 		&account.Email,
-		&account.ApiKey,
+		&account.APIKey,
 		&account.Balance,
 		&createdAt,
 		&updatedAt,
@@ -90,7 +97,6 @@ func (r *AccountRepository) FindByID(id string) (*domain.Account, error) {
 	if err == sql.ErrNoRows {
 		return nil, domain.ErrAccountNotFound
 	}
-
 	if err != nil {
 		return nil, err
 	}
@@ -100,6 +106,8 @@ func (r *AccountRepository) FindByID(id string) (*domain.Account, error) {
 	return &account, nil
 }
 
+// UpdateBalance atualiza o saldo da conta usando SELECT FOR UPDATE para consistência em acessos concorrentes
+// Retorna ErrAccountNotFound se a conta não existir
 func (r *AccountRepository) UpdateBalance(account *domain.Account) error {
 	tx, err := r.db.Begin()
 	if err != nil {
@@ -107,6 +115,7 @@ func (r *AccountRepository) UpdateBalance(account *domain.Account) error {
 	}
 	defer tx.Rollback()
 
+	// SELECT FOR UPDATE previne race conditions no saldo
 	var currentBalance float64
 	err = tx.QueryRow(`SELECT balance FROM accounts WHERE id = $1 FOR UPDATE`,
 		account.ID).Scan(&currentBalance)

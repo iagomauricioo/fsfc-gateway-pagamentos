@@ -18,8 +18,8 @@ const (
 type Invoice struct {
 	ID             string
 	AccountID      string
-	Status         Status
 	Amount         float64
+	Status         Status
 	Description    string
 	PaymentType    string
 	CardLastDigits string
@@ -45,8 +45,8 @@ func NewInvoice(accountID string, amount float64, description string, paymentTyp
 	return &Invoice{
 		ID:             uuid.New().String(),
 		AccountID:      accountID,
-		Status:         StatusPending,
 		Amount:         amount,
+		Status:         StatusPending,
 		Description:    description,
 		PaymentType:    paymentType,
 		CardLastDigits: lastDigits,
@@ -68,18 +68,17 @@ func (i *Invoice) Process() error {
 	} else {
 		newStatus = StatusRejected
 	}
-	i.Status = newStatus
-	i.UpdatedAt = time.Now()
 
+	i.Status = newStatus
 	return nil
 }
 
-func (i *Invoice) UpdateStatus(status Status) error {
+func (i *Invoice) UpdateStatus(newStatus Status) error {
 	if i.Status != StatusPending {
 		return ErrInvalidStatus
 	}
-	i.Status = status
-	i.UpdatedAt = time.Now()
 
+	i.Status = newStatus
+	i.UpdatedAt = time.Now()
 	return nil
 }

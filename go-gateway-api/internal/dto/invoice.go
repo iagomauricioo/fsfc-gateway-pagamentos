@@ -9,11 +9,11 @@ import (
 const (
 	StatusPending  = string(domain.StatusPending)
 	StatusApproved = string(domain.StatusApproved)
-	StatusRejected = string(domain.StatusApproved)
+	StatusRejected = string(domain.StatusRejected)
 )
 
 type CreateInvoiceInput struct {
-	ApiKey         string
+	APIKey         string
 	Amount         float64 `json:"amount"`
 	Description    string  `json:"description"`
 	PaymentType    string  `json:"payment_type"`
