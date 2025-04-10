@@ -2,13 +2,25 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Info } from "lucide-react";
 import { cookies } from "next/dist/server/request/cookies";
+import { redirect } from "next/navigation";
 
 export async function loginAction(formData: FormData) {
     "use server";
     const apiKey = formData.get("apiKey");
 
+    const response = await fetch("http://localhost:8080/accounts", {
+        headers: {
+            "X-API-Key": apiKey as string,
+        },
+    })
+
+    if (!response.ok) {
+        throw new Error("API Key inválida");
+    }
+
     const cookieStore = await cookies();
     cookieStore.set("apiKey", apiKey as string)
+    redirect("/invoices")
 }
 
 export default function AuthForm() {

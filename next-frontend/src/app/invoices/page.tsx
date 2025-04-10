@@ -19,7 +19,7 @@ export default function DashboardPage() {
                 Gerencie suas faturas e acompanhe os pagamentos
               </CardDescription>
             </div>
-            <Link href="/dashboard/invoice/new">
+            <Link href="/invoice/new">
               <Button className="bg-indigo-600 hover:bg-indigo-700">
                 <Plus className="mr-2 h-4 w-4" />
                 Nova Fatura
@@ -86,7 +86,7 @@ export default function DashboardPage() {
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex gap-2">
-                          <Link href="/dashboard/invoice/INV-001">
+                          <Link href="/invoice/INV-001">
                             <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400">
                               <Eye className="h-4 w-4" />
                             </Button>
