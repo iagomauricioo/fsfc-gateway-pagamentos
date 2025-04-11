@@ -1,5 +1,5 @@
 @baseUrl = http://localhost:8080
-@apiKey = {{createAccount.response.body.api_key}}
+@apiKey = 8f4c1ef6deb979764df9dade8082b6a3
 
 # @name createAccount
 POST {{baseUrl}}/accounts
@@ -7,7 +7,7 @@ Content-Type: application/json
 
 {
     "name": "John Doe",
-    "email": "john@doew222.com"
+    "email": "iago@mauricio.com"
 }
 
 ### Obter dados da conta
@@ -22,7 +22,7 @@ Content-Type: application/json
 X-API-Key: {{apiKey}}
 
 {
-    "amount": 100.50,
+    "amount": 9999.00,
     "description": "Teste de fatura",
     "payment_type": "credit_card",
     "card_number": "4111111111111111",

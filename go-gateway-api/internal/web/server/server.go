@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/cors"
 	"github.com/iagomauricio/fsfc-gateway-pagamentos/go-gateway/internal/service"
 	"github.com/iagomauricio/fsfc-gateway-pagamentos/go-gateway/internal/web/handlers"
 	"github.com/iagomauricio/fsfc-gateway-pagamentos/go-gateway/internal/web/middleware"
@@ -27,6 +28,16 @@ func NewServer(accountService *service.AccountService, invoiceService *service.I
 }
 
 func (s *Server) ConfigureRoutes() {
+	// Configuração do CORS
+	s.router.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:3000"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token", "X-API-KEY"},
+		ExposedHeaders:   []string{"Link"},
+		AllowCredentials: true,
+		MaxAge:           300,
+	}))
+
 	accountHandler := handlers.NewAccountHandler(s.accountService)
 	invoiceHandler := handlers.NewInvoiceHandler(s.invoiceService)
 	authMiddleware := middleware.NewAuthMiddleware(s.accountService)
@@ -36,9 +47,9 @@ func (s *Server) ConfigureRoutes() {
 
 	s.router.Group(func(r chi.Router) {
 		r.Use(authMiddleware.Authenticate)
-		s.router.Post("/invoice", invoiceHandler.Create)
-		s.router.Get("/invoice/{id}", invoiceHandler.GetByID)
-		s.router.Get("/invoice", invoiceHandler.ListByAccount)
+		r.Post("/invoice", invoiceHandler.Create)
+		r.Get("/invoice/{id}", invoiceHandler.GetByID)
+		r.Get("/invoice", invoiceHandler.ListByAccount)
 	})
 }
 
@@ -47,5 +58,6 @@ func (s *Server) Start() error {
 		Addr:    ":" + s.port,
 		Handler: s.router,
 	}
+	println("🚀 Server running on http://localhost" + ":" + s.port)
 	return s.server.ListenAndServe()
 }
