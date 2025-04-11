@@ -1,4 +1,10 @@
+"use server";
+import { cookies } from "next/headers";
+
 export async function createInvoiceAction(formData: FormData) {
+  const cookiesStore = await cookies();
+  const apiKey = cookiesStore.get("apiKey")?.value;
+
   const amount = formData.get("value")?.toString()?.replace(",", ".") ?? "";
   const amountFloat = parseFloat(amount);
   const description = formData.get("description")?.toString() ?? "";
@@ -14,7 +20,7 @@ export async function createInvoiceAction(formData: FormData) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-API-Key": "7312b2d1827dcbd39cc9337f3caa322c",
+      "X-API-Key": apiKey as string,
     },
     body: JSON.stringify({
       amount: amountFloat,
@@ -32,5 +38,11 @@ export async function createInvoiceAction(formData: FormData) {
     throw new Error("Failed to create invoice");
   }
 
-  return response.json();
+  const data = await response.json();
+  
+  const { redirect } = await import("next/navigation");
+  redirect(`/invoices/${data.id}`);
+
+  return data;
 }
+  

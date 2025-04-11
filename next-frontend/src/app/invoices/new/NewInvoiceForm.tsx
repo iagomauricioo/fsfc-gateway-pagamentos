@@ -4,8 +4,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { CreditCard } from "lucide-react";
 import { createInvoiceAction } from "./create-invoice-action";
 import { Button } from "@/components/ui/button";
+import React from "react";
 
 export function NewInvoiceForm() {
+  const [amount, setAmount] = React.useState(0);
+
   return (
     <form
       action={createInvoiceAction}
@@ -33,6 +36,7 @@ export function NewInvoiceForm() {
                 min={0}
                 placeholder="0,00"
                 className="pl-10 bg-slate-800 border-slate-700 text-white"
+                onChange={(e) => setAmount(Number(e.target.value))}
               />
             </div>
           </div>
@@ -134,15 +138,15 @@ export function NewInvoiceForm() {
       <div className="bg-slate-800/30 rounded-md p-6 space-y-4">
         <div className="flex justify-between">
           <span className="text-slate-400">Subtotal</span>
-          <span className="text-white">R$ 0,00</span>
+          <span className="text-white">R$ {amount.toFixed(2)}</span>
         </div>
         <div className="flex justify-between">
           <span className="text-slate-400">Taxa de Processamento (2%)</span>
-          <span className="text-white">R$ 0,00</span>
+          <span className="text-white">R$ 0.00</span>
         </div>
         <div className="border-t border-slate-700 pt-4 flex justify-between">
           <span className="text-lg font-medium text-white">Total</span>
-          <span className="text-lg font-medium text-white">R$ 0,00</span>
+          <span className="text-lg font-medium text-white">R$ {amount.toFixed(2)}</span>
         </div>
       </div>
 
